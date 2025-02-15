@@ -7,6 +7,8 @@ The script processes image files by extracting the `DateTimeOriginal` metadata. 
 
 If multiple files with the same name exist in the source folder, the script appends a counter to the filename to ensure uniqueness, preventing any file from being overwritten in the target folder.
 
+The script is designed to leave the source folder unchanged and can be safely executed multiple times. It attempts to extract the date from image metadata as described, ensuring that only images with valid dates are copied to the target folder without duplicates. Images for which no date is found will be skipped, as the script assumes that the date should generally be present in the metadata.
+
 ## Features
 - Automatically extracts the `DateTimeOriginal` metadata from images.
 - Searches for alternative files with the same base name if metadata is missing.
