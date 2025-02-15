@@ -40,6 +40,9 @@ This Bash script organizes photos by extracting their capture date using `exifto
 
 ## Customization
 - Modify the `FILE_TYPES` array to add or remove supported file extensions.
+   ```sh
+   FILE_TYPES=("nef" "jpeg" "jpg")
+   ```
 - Adjust the `SOURCE_FOLDER` and `TARGET_FOLDER` paths as needed.
 
 ## Example Workflow
