@@ -1,4 +1,4 @@
-# Photo Organizer Script
+# Photo Organizer Script (Organize Photos By Date)
 
 ## Description
 This Bash script organizes photos by extracting their capture date using `exiftool` and copying them into date-based folders. It avoids copying duplicate files by comparing hashes and processes multiple file types defined in `FILE_TYPES` to extract metadata.
