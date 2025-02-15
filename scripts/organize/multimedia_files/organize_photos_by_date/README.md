@@ -1,0 +1,62 @@
+# Photo Organizer Script
+
+## Description
+This Bash script organizes photos by extracting their capture date using `exiftool` and moving them into date-based folders. It ensures that duplicate files are not copied by comparing hashes and prioritizes specific file types.
+
+## Features
+- Automatically extracts the `DateTimeOriginal` metadata from images.
+- Sorts files into `YYYY/MM/DD` structured folders.
+- Supports multiple file types (`nef`, `jpeg`, `jpg` by default, customizable).
+- Prevents duplicate file copies using SHA1 hashes.
+- Uses `rsync` for efficient file transfers.
+
+## Requirements
+- `exiftool` (Install via `sudo apt install libimage-exiftool-perl` on Debian/Ubuntu or `brew install exiftool` on macOS)
+- `rsync`
+- `sha1sum`
+
+## Installation
+1. Install required dependencies:
+   ```sh
+   sudo apt install libimage-exiftool-perl rsync  # Debian/Ubuntu
+   brew install exiftool rsync  # macOS
+   ```
+2. Copy the script to a preferred location.
+3. Make the script executable:
+   ```sh
+   chmod +x script.sh
+   ```
+
+## Usage
+1. Update the script with the correct source and target directories:
+   ```sh
+   SOURCE_FOLDER="/path/to/source_folder"
+   TARGET_FOLDER="/path/to/target_folder"
+   ```
+2. Run the script:
+   ```sh
+   ./script.sh
+   ```
+
+## Customization
+- Modify the `FILE_TYPES` array to add or remove supported file extensions.
+- Adjust the `SOURCE_FOLDER` and `TARGET_FOLDER` paths as needed.
+
+## Example Workflow
+1. A photo `IMG_1234.JPG` is found in `/photos/raw/`.
+2. `exiftool` extracts the date `2024/01/15` from its metadata.
+3. The script creates the folder `/sorted_photos/2024/01/15/`.
+4. The photo is moved to `/sorted_photos/2024/01/15/IMG_1234.JPG`.
+5. If a duplicate exists, the script skips copying it.
+
+## Troubleshooting
+- If `exiftool` is not found, install it and check if it's in your `PATH`:
+  ```sh
+  which exiftool
+  ```
+- Ensure the script has the correct permissions (`chmod +x script.sh`).
+- Run the script with `bash -x script.sh` for debugging.
+
+## Notes
+This script was created and used on Linux. Not tested for other systems.
+I provide no warranty and take no responsibility for using the script in any way.
