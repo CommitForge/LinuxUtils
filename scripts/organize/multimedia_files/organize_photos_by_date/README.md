@@ -11,7 +11,7 @@ The script is designed to leave the source folder unchanged and can be safely ex
 
 ## Features
 - Automatically extracts the `DateTimeOriginal` metadata from images.
-- Searches for alternative files with the same base name if metadata is missing.
+- Searches (within the same folder) for alternative files with the same base name if metadata is missing.
 - Sorts files into `YYYY/MM/DD` structured folders.
 - Supports multiple file types (`nef`, `jpeg`, `jpg` by default, customizable).
 - Prevents duplicate file copies using SHA1 hashes.
@@ -56,7 +56,7 @@ The script is designed to leave the source folder unchanged and can be safely ex
 ## Example Workflow
 1. A photo `IMG_1234.NEF` is found in `/photos/raw/`.
 2. `exiftool` extracts the date `2024/01/15` from its metadata.
-3. If metadata is missing, the script searches for an alternative file like `IMG_1234.JPG` and extracts the date from that file.
+3. If metadata is missing, the script searches (within the same folder) for an alternative file like `IMG_1234.JPG` and extracts the date from that file.
 4. If no date is found from any matching file, the file is skipped.
 5. The script creates the folder `/sorted_photos/2024/01/15/`.
 6. The photo is copied to `/sorted_photos/2024/01/15/IMG_1234.NEF`.
