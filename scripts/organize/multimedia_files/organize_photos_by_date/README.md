@@ -24,7 +24,7 @@ This Bash script organizes photos by extracting their capture date using `exifto
 2. Copy the script to a preferred location.
 3. Make the script executable:
    ```sh
-   chmod +x script.sh
+   chmod +x organize_photos_by_date.sh
    ```
 
 ## Usage
@@ -35,7 +35,7 @@ This Bash script organizes photos by extracting their capture date using `exifto
    ```
 2. Run the script:
    ```sh
-   ./script.sh
+   ./organize_photos_by_date.sh
    ```
 
 ## Customization
@@ -57,8 +57,8 @@ This Bash script organizes photos by extracting their capture date using `exifto
   ```sh
   which exiftool
   ```
-- Ensure the script has the correct permissions (`chmod +x script.sh`).
-- Run the script with `bash -x script.sh` for debugging.
+- Ensure the script has the correct permissions (`chmod +x organize_photos_by_date.sh`).
+- Run the script with `bash -x organize_photos_by_date.sh` for debugging.
 
 ## Notes
 This script was created and used on Linux. Not tested for other systems.
