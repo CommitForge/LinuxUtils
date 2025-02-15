@@ -59,7 +59,7 @@ I have many images taken with my mirrorless camera that were not organized well.
 ## Example Workflow
 1. A photo `IMG_1234.NEF` is found in `/photos/raw/`.
 2. `exiftool` extracts the date `2024/01/15` from its metadata.
-3. If metadata is missing, the script searches (within the same folder) for an alternative file like `IMG_1234.JPG` and extracts the date from that file.
+3. If metadata is missing, the script searches (within the same folder) for an alternative file with same base name like `IMG_1234.JPG` and extracts the date from that file.
 4. If no date is found from any matching file, the file is skipped.
 5. The script creates the folder `/sorted_photos/2024/01/15/`.
 6. The photo is copied to `/sorted_photos/2024/01/15/IMG_1234.NEF`.
