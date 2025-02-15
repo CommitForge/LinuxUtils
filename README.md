@@ -6,7 +6,7 @@ Utility files. Read individual README.md for chosen utility.
 ├── README.md
 └── scripts
     └── organize
-        └── multimedia_files
+        └── multimedia
             └── organize_photos_by_date
                 ├── organize_photos_by_date.sh
                 └── README.md
