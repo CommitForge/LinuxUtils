@@ -40,6 +40,7 @@ The script primarily works with images by extracting metadata. If the `DateTimeO
    ```sh
    ./organize_photos_by_date.sh
    ```
+   If there are a lot of files, the script takes some time to execute, since it has to calculate all the hashes.
 
 ## Customization
 - Modify the `FILE_TYPES` array to add or remove supported file extensions.
