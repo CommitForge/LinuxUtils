@@ -62,4 +62,4 @@ This Bash script organizes photos by extracting their capture date using `exifto
 
 ## Notes
 This script was created and used on Linux. Not tested for other systems.
-I provide no warranty and take no responsibility for using the script in any way.
+I provide no warranty and take no responsibility for using the script or using the provided instructions in any way.
