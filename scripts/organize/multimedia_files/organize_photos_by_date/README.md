@@ -9,6 +9,9 @@ If multiple files with the same name exist in the source folder, the script appe
 
 The script is designed to leave the source folder unchanged and can be safely executed multiple times over the same source and target folder.
 
+## Practical Use Case
+I have many images taken with my mirrorless camera that were not organized well. Now, they are organized into folders by the dates they were taken.
+
 ## Features
 - Automatically extracts the `DateTimeOriginal` metadata from images.
 - Searches (within the same folder) for alternative files with the same base name if metadata is missing.
