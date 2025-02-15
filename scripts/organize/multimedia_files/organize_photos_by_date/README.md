@@ -3,6 +3,8 @@
 ## Description
 This Bash script organizes photos by extracting their capture date using `exiftool` and moving them into date-based folders. It ensures that duplicate files are not copied by comparing hashes and prioritizes specific file types.
 
+The script could potentially be used for other files as well, since if it does not find image metadata, it falls back to using the file's creation date.
+
 ## Features
 - Automatically extracts the `DateTimeOriginal` metadata from images.
 - Sorts files into `YYYY/MM/DD` structured folders.
@@ -49,7 +51,7 @@ This Bash script organizes photos by extracting their capture date using `exifto
 1. A photo `IMG_1234.JPG` is found in `/photos/raw/`.
 2. `exiftool` extracts the date `2024/01/15` from its metadata.
 3. The script creates the folder `/sorted_photos/2024/01/15/`.
-4. The photo is moved to `/sorted_photos/2024/01/15/IMG_1234.JPG`.
+4. The photo is copied to `/sorted_photos/2024/01/15/IMG_1234.JPG`.
 5. If a duplicate exists, the script skips copying it.
 
 ## Troubleshooting
