@@ -3,7 +3,7 @@
 ## Description
 This Bash script organizes photos by extracting their capture date using `exiftool` and copying them into date-based folders. It ensures that duplicate files are not copied by comparing hashes and prioritizes specific file types.
 
-The script primarily works with images by extracting metadata. If the `DateTimeOriginal` metadata is missing, it attempts to find another file with the same base name but a different extension (e.g., a `.jpeg` if the `.nef` is missing metadata). If no date is found from any matching files, the file is skipped and not organized.
+The script primarily works with images by extracting metadata. If the `DateTimeOriginal` metadata is missing, it attempts to find another file with the same base name but a different extension (this happens in the order of extensions provided in the `FILE_TYPES` array: e.g., a `.jpeg` if the `.nef` is missing metadata). If no date is found from any matching files, the file is skipped and not organized.
 
 ## Features
 - Automatically extracts the `DateTimeOriginal` metadata from images.
