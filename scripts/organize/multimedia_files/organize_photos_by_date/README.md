@@ -1,12 +1,13 @@
 # Photo Organizer Script
 
 ## Description
-This Bash script organizes photos by extracting their capture date using `exiftool` and moving them into date-based folders. It ensures that duplicate files are not copied by comparing hashes and prioritizes specific file types.
+This Bash script organizes photos by extracting their capture date using `exiftool` and copying them into date-based folders. It ensures that duplicate files are not copied by comparing hashes and prioritizes specific file types.
 
-The script could potentially be used for other files as well, since if it does not find image metadata, it falls back to using the file's creation date.
+The script primarily works with images by extracting metadata. If the `DateTimeOriginal` metadata is missing, it attempts to find another file with the same base name but a different extension (e.g., a `.jpeg` if the `.nef` is missing metadata). If no date is found from any matching files, the file is skipped and not organized.
 
 ## Features
 - Automatically extracts the `DateTimeOriginal` metadata from images.
+- Searches for alternative files with the same base name if metadata is missing.
 - Sorts files into `YYYY/MM/DD` structured folders.
 - Supports multiple file types (`nef`, `jpeg`, `jpg` by default, customizable).
 - Prevents duplicate file copies using SHA1 hashes.
@@ -48,11 +49,13 @@ The script could potentially be used for other files as well, since if it does n
 - Adjust the `SOURCE_FOLDER` and `TARGET_FOLDER` paths as needed.
 
 ## Example Workflow
-1. A photo `IMG_1234.JPG` is found in `/photos/raw/`.
+1. A photo `IMG_1234.NEF` is found in `/photos/raw/`.
 2. `exiftool` extracts the date `2024/01/15` from its metadata.
-3. The script creates the folder `/sorted_photos/2024/01/15/`.
-4. The photo is copied to `/sorted_photos/2024/01/15/IMG_1234.JPG`.
-5. If a duplicate exists, the script skips copying it.
+3. If metadata is missing, the script searches for an alternative file like `IMG_1234.JPG` and extracts the date from that file.
+4. If no date is found from any matching file, the file is skipped.
+5. The script creates the folder `/sorted_photos/2024/01/15/`.
+6. The photo is copied to `/sorted_photos/2024/01/15/IMG_1234.NEF`.
+7. If a duplicate exists, the script skips copying it.
 
 ## Troubleshooting
 - If `exiftool` is not found, install it and check if it's in your `PATH`:
