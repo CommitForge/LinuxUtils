@@ -5,7 +5,7 @@ This Bash script organizes photos by extracting their capture date using `exifto
 
 The script processes image files by extracting the `DateTimeOriginal` metadata. If this metadata is missing, it attempts to find (within the same folder) another file with the same base name but a different extension, following the order of extensions specified in the `FILE_TYPES` array (e.g., it will check for a `.jpeg` if the `.nef` is missing metadata). If no date is found from any matching files, the file is skipped and not organized.
 
-If multiple files with the same name exist in the source folder, the script appends a counter to the filename to ensure uniqueness, preventing any file from being overwritten in the target folder.
+If multiple files with the same name exist in the source folder, the script appends a counter to the filename to ensure uniqueness, preventing any file from being overwritten in the target folder. Otherwise all the filenames are preserved.
 
 The script is designed to leave the source folder unchanged and can be safely executed multiple times over the same source and target folder.
 
