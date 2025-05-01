@@ -96,4 +96,3 @@ You can use this list to trigger alerts or automate blocking.
 
 ---
 
-Let me know if you'd like a sample cron setup or an enhancement that auto-blocks IPs as soon as they're detected.
