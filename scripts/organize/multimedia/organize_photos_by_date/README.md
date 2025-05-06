@@ -3,7 +3,7 @@
 
 # 📷 Photo Organizer Script
 
-## organize_photos_by_date.sh
+## `organize_photos_by_date.sh`
 
 **Organize photos by capture date using EXIF metadata**
 
