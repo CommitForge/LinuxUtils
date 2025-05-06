@@ -1,6 +1,8 @@
 
 ---
 
+# Collect suspicious IPs
+
 ## `security_ips_collect_suspicious.sh`
 
 This script analyzes Apache access logs to identify suspicious IP addresses responsible for HTTP 4xx and 5xx errors. It filters out safe IPs (whitelist) and those already blocked by the system firewall, then appends new, unique offenders to a persistent list for further review or action.
