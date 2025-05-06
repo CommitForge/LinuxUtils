@@ -1,7 +1,7 @@
 
 ---
 
-# 🛡️ Collect suspicious IPs
+# 🛡️ Collect Suspicious IPs
 
 ## `security_ips_collect_suspicious.sh`
 
