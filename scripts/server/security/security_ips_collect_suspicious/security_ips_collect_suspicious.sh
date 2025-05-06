@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# START README #############
-# Tested/used only in Ubuntu
-# END README ###############
+# START README -----------------------
+# Currently tested/used only in Ubuntu
+# END README -------------------------
 
-# START PARAMETERS
+# START PARAMETERS ------------------------------------------------------------------------------------
 # File paths — update these to match your environment
 APACHE_LOG_PATH="/var/log/apache2/access.log"               # Default Apache log path for Ubuntu/Debian
 APACHE_LOG_PATH_RHEL="/var/log/httpd/access_log"            # Default Apache log path for RHEL/CentOS
 IP_LIST_PATH="/opt/security/error_ips.txt"                  # Path to store collected IPs
 WHITELIST_PATH="/opt/security/whitelist.txt"                # Trusted IPs to ignore
-# END PARAMETERS
+# END PARAMETERS --------------------------------------------------------------------------------------
 
 # Temporary files
 TEMP_NEW_IPS=$(mktemp /tmp/temp_ips.XXXXXX)
