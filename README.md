@@ -20,3 +20,8 @@ Utility files. Read individual README.md for chosen utility.
 8 directories, 5 files
 
 ```
+TODO:
+compare 2 folders. make "meaningful" output:
+```
+diff -qr /home home/ | awk '/^Files/ {print $2, $4}'
+```
