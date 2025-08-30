@@ -25,3 +25,10 @@ compare 2 folders. make "meaningful" output:
 ```
 diff -qr /home home/ | awk '/^Files/ {print $2, $4}'
 ```
+Linux OS oneliner: create a 1gb ram disk in current folder:
+```
+# do
+sudo mkdir -p ./ramdisk && sudo mount -t tmpfs -o size=1G tmpfs ./ramdisk
+# undo
+sudo umount ./ramdisk
+```
