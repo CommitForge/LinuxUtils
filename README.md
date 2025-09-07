@@ -32,3 +32,20 @@ sudo mkdir -p ./ramdisk && sudo mount -t tmpfs -o size=1G tmpfs ./ramdisk
 # undo
 sudo umount ./ramdisk
 ```
+Linux OS amdgpu firmware update:
+```
+# Backup old firmware
+sudo cp -r /lib/firmware/amdgpu /lib/firmware/amdgpu.bak.$(date +%Y%m%d)
+
+# Get latest firmware (shallow clone)
+git clone --depth=1 https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git
+
+# Copy new AMD GPU firmware
+sudo cp linux-firmware/amdgpu/* /lib/firmware/amdgpu/
+
+# Update initramfs
+sudo update-initramfs -u -k all
+
+# Reboot
+#sudo reboot
+```
