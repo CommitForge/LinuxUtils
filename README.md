@@ -49,3 +49,38 @@ sudo update-initramfs -u -k all
 # Reboot
 #sudo reboot
 ```
+
+List by round .sh
+```
+#!/usr/bin/env bash
+
+# Usage: ./cat_by_round.sh <path> <round>
+# Example: ./cat_by_round.sh ./myfolder 2
+
+DIR="$1"
+ROUND="$2"
+PER_ROUND=12
+
+if [ -z "$DIR" ] || [ -z "$ROUND" ]; then
+  echo "Usage: $0 <path> <round>"
+  exit 1
+fi
+
+FILES=$(ls -1 "$DIR")
+
+START=$(( (ROUND - 1) * PER_ROUND + 1 ))
+END=$(( ROUND * PER_ROUND ))
+
+echo "$FILES" | sed -n "${START},${END}p" | while read -r file; do
+  FILEPATH="$DIR/$file"
+
+  [ -f "$FILEPATH" ] || continue
+
+  echo
+  echo "=============================="
+  echo "FILE: $file"
+  echo "=============================="
+  cat "$FILEPATH"
+done
+```
+
