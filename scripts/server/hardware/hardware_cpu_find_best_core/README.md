@@ -49,7 +49,12 @@ For each core rank bucket, the script prints:
 
 - `CURVE`: starting Curve Optimizer range
 - `FREQ_INC(+MHz)`: per-core priority hint (higher for stronger cores)
-- `Global Boost Override starting hint`: lowest per-core value, for BIOSes that only expose one global override
+- `TOPOLOGY`: package/core mapping label for BIOS matching
+
+It also prints a dedicated global fallback block for systems where per-core controls are missing:
+
+- Global Curve Optimizer (`All Cores`) start value and test range
+- Global Boost Override (`CPU`) start value and test range
 
 ### Rank Buckets
 
@@ -81,6 +86,7 @@ For each core rank bucket, the script prints:
 - Adds `FREQ_INC(+MHz)` column in output
 - Includes `TOPOLOGY` column for easier BIOS matching
 - Clarifies that Boost Override is commonly global in PBO Advanced
+- Adds `GLOBAL FALLBACK SUGGESTIONS` with both global curve and global MHz guidance
 
 5. `INTEL GUIDANCE` or `GENERIC GUIDANCE` (non-AMD)
 - Suggests safe next steps based on available data

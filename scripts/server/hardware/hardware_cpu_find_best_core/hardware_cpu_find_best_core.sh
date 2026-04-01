@@ -234,11 +234,12 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
     echo "=== AMD Curve/Boost Suggestions ==="
     echo "Profile: $AMD_PROFILE_LABEL"
     echo "Note: Boost Override CPU is usually global in PBO Advanced."
-    echo "Note: FREQ_INC(+MHz) below is a per-core priority hint; if global-only, start from the lowest shown value."
+    echo "Note: Per-core table below is priority guidance."
 
     declare -a curve
     declare -a freq_inc
     min_freq_inc=999999
+    max_freq_inc=0
 
     for i in "${!ranked[@]}"; do
         read -r core _ _ _ <<< "${ranked[$i]}"
@@ -298,6 +299,9 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
         if (( freq_inc_num < min_freq_inc )); then
             min_freq_inc=$freq_inc_num
         fi
+        if (( freq_inc_num > max_freq_inc )); then
+            max_freq_inc=$freq_inc_num
+        fi
     done
 
     printf "%-6s %-6s %-10s %-12s %-14s %-14s\n" "RANK" "CORE" "TOPOLOGY" "MAX(kHz)" "CURVE" "FREQ_INC(+MHz)"
@@ -309,7 +313,41 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
     done
 
     echo ""
-    echo "Global Boost Override starting hint: +${min_freq_inc} MHz (if your BIOS only allows one value)."
+    case "$AMD_PROFILE" in
+        RYZEN_9000_PLUS)
+            global_curve_start="-10"
+            global_curve_range="-10 to -15"
+            ;;
+        RYZEN_7000_8000)
+            global_curve_start="-10"
+            global_curve_range="-10 to -15"
+            ;;
+        RYZEN_5000_6000)
+            global_curve_start="-5"
+            global_curve_range="-5 to -10"
+            ;;
+        *)
+            global_curve_start="-5"
+            global_curve_range="-5 to -10"
+            ;;
+    esac
+
+    if (( min_freq_inc >= max_freq_inc )); then
+        global_freq_start="+${min_freq_inc}"
+        global_freq_range="+${min_freq_inc}"
+    else
+        global_freq_mid=$(( min_freq_inc + 25 ))
+        if (( global_freq_mid > max_freq_inc )); then
+            global_freq_mid=$max_freq_inc
+        fi
+        global_freq_start="+${min_freq_inc}"
+        global_freq_range="+${min_freq_inc} to +${global_freq_mid}"
+    fi
+
+    echo "=== GLOBAL FALLBACK SUGGESTIONS (NO PER-CORE CONTROLS) ==="
+    echo "Curve Optimizer (All Cores): start ${global_curve_start}, test in ${global_curve_range}"
+    echo "Boost Override CPU (Global): start ${global_freq_start} MHz, test in ${global_freq_range} MHz"
+    echo "If stable and thermals are acceptable, increase gradually in small steps."
 elif [[ "$PLATFORM" == "INTEL" ]]; then
     echo ""
     echo "=== INTEL GUIDANCE ==="
