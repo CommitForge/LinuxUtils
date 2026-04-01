@@ -233,10 +233,12 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
     echo ""
     echo "=== AMD Curve/Boost Suggestions ==="
     echo "Profile: $AMD_PROFILE_LABEL"
-    echo "Note: FREQ_INC(+MHz) is a per-core target. If your BIOS supports only global boost override, start from the lowest value."
+    echo "Note: Boost Override CPU is usually global in PBO Advanced."
+    echo "Note: FREQ_INC(+MHz) below is a per-core priority hint; if global-only, start from the lowest shown value."
 
     declare -a curve
     declare -a freq_inc
+    min_freq_inc=999999
 
     for i in "${!ranked[@]}"; do
         read -r core _ _ _ <<< "${ranked[$i]}"
@@ -245,37 +247,37 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
             RYZEN_9000_PLUS)
                 if (( i < 2 )); then
                     curve[$core]="-10 to -20"
-                    freq_inc[$core]="+125"
+                    freq_inc[$core]="+200"
                 elif (( i < 6 )); then
                     curve[$core]="-15 to -25"
-                    freq_inc[$core]="+175"
+                    freq_inc[$core]="+150"
                 else
                     curve[$core]="-20 to -30"
-                    freq_inc[$core]="+200"
+                    freq_inc[$core]="+100"
                 fi
                 ;;
             RYZEN_7000_8000)
                 if (( i < 2 )); then
                     curve[$core]="-10 to -15"
-                    freq_inc[$core]="+100"
+                    freq_inc[$core]="+150"
                 elif (( i < 6 )); then
                     curve[$core]="-15 to -25"
-                    freq_inc[$core]="+150"
+                    freq_inc[$core]="+100"
                 else
                     curve[$core]="-20 to -30"
-                    freq_inc[$core]="+200"
+                    freq_inc[$core]="+50"
                 fi
                 ;;
             RYZEN_5000_6000)
                 if (( i < 2 )); then
                     curve[$core]="-5 to -10"
-                    freq_inc[$core]="+50"
+                    freq_inc[$core]="+100"
                 elif (( i < 6 )); then
                     curve[$core]="-10 to -15"
-                    freq_inc[$core]="+100"
+                    freq_inc[$core]="+50"
                 else
                     curve[$core]="-15 to -25"
-                    freq_inc[$core]="+150"
+                    freq_inc[$core]="+25"
                 fi
                 ;;
             *)
@@ -284,13 +286,18 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
                     freq_inc[$core]="+50"
                 elif (( i < 6 )); then
                     curve[$core]="-10 to -15"
-                    freq_inc[$core]="+100"
+                    freq_inc[$core]="+25"
                 else
                     curve[$core]="-15 to -20"
-                    freq_inc[$core]="+125"
+                    freq_inc[$core]="+0"
                 fi
                 ;;
         esac
+
+        freq_inc_num=${freq_inc[$core]#+}
+        if (( freq_inc_num < min_freq_inc )); then
+            min_freq_inc=$freq_inc_num
+        fi
     done
 
     printf "%-6s %-6s %-10s %-12s %-14s %-14s\n" "RANK" "CORE" "TOPOLOGY" "MAX(kHz)" "CURVE" "FREQ_INC(+MHz)"
@@ -300,6 +307,9 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
         read -r core core_label _ max_khz <<< "${ranked[$i]}"
         printf "%-6d %-6d %-10s %-12d %-14s %-14s\n" "$((i + 1))" "$core" "$core_label" "$max_khz" "${curve[$core]}" "${freq_inc[$core]}"
     done
+
+    echo ""
+    echo "Global Boost Override starting hint: +${min_freq_inc} MHz (if your BIOS only allows one value)."
 elif [[ "$PLATFORM" == "INTEL" ]]; then
     echo ""
     echo "=== INTEL GUIDANCE ==="

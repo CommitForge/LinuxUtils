@@ -48,7 +48,8 @@ The output now also includes `Profile source` to show how mapping was chosen (fo
 For each core rank bucket, the script prints:
 
 - `CURVE`: starting Curve Optimizer range
-- `FREQ_INC(+MHz)`: suggested frequency increase target per core
+- `FREQ_INC(+MHz)`: per-core priority hint (higher for stronger cores)
+- `Global Boost Override starting hint`: lowest per-core value, for BIOSes that only expose one global override
 
 ### Rank Buckets
 
@@ -79,6 +80,7 @@ For each core rank bucket, the script prints:
 - Keeps Ryzen 5000-class tuning fully supported
 - Adds `FREQ_INC(+MHz)` column in output
 - Includes `TOPOLOGY` column for easier BIOS matching
+- Clarifies that Boost Override is commonly global in PBO Advanced
 
 5. `INTEL GUIDANCE` or `GENERIC GUIDANCE` (non-AMD)
 - Suggests safe next steps based on available data
