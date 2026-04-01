@@ -1,63 +1,57 @@
-📘 README (clean + practical)
-What this tool does
-Samples per-thread frequency
-Tracks:
-max frequency
-average frequency
-sample count
-Groups threads → physical cores
-Ranks cores by performance
-Platform awareness
-Platform	Behavior
-AMD	Full analysis + Curve Optimizer suggestions
-Intel	Core ranking only (no CO suggestions)
-Unknown	Basic stats only
-Output sections
-1. THREAD DATA
+# hardware_cpu_find_best_core
 
-Raw per-thread stats
-Useful for debugging and validation
+Samples per-thread CPU frequency, ranks physical cores by observed peak clock, and prints optional AMD Curve Optimizer guidance.
 
-2. CORE ANALYSIS
-Combines SMT pairs into physical cores
-Uses max observed frequency
-Outputs ranking
+## Usage
 
-👉 This is your true “best cores” list
+```bash
+chmod +x hardware_cpu_find_best_core.sh
+./hardware_cpu_find_best_core.sh [duration_seconds] [interval_seconds]
+```
 
-3. AMD Curve Optimizer Suggestions
+Defaults:
 
-Only shown on AMD
+- `duration_seconds`: `60`
+- `interval_seconds`: `0.2`
 
-Rank	Meaning	Curve
-Top 2	Best cores	-5 to -10
-Next 4	Strong	-10 to -15
-Rest	Weak	-15 to -25
-How to use results (important)
+Example:
 
-👉 Don’t blindly copy numbers.
+```bash
+./hardware_cpu_find_best_core.sh 90 0.1
+```
 
-Apply suggested ranges
-Test stability
-Adjust per core if needed
-Limitations (don’t ignore)
-No synthetic load → may miss peak boost
-Results depend on:
-background activity
-thermal state
-scheduler behavior
+## Platform Behavior
 
-👉 For best results:
+| Platform | Behavior |
+|---|---|
+| AMD | Thread/core ranking plus Curve Optimizer suggestion ranges |
+| Intel | Thread/core ranking only |
+| Unknown | Basic thread/core statistics |
 
-run while using system normally
-or run multiple times and compare
-Smart usage strategy
+## Output Sections
 
-Don’t obsess over every core.
+1. `THREAD DATA`
+- Per-thread max and average observed frequency
+- Number of samples per thread
 
-Focus on:
+2. `CORE ANALYSIS`
+- Groups logical threads into physical cores
+- Uses highest observed frequency per core
+- Prints best-to-worst core ranking
 
-top 2 cores
-worst 3–4 cores
+3. `AMD Curve Optimizer Suggestions` (AMD only)
+- Top 2 cores: `-5 to -10`
+- Next 4 cores: `-10 to -15`
+- Remaining cores: `-15 to -25`
 
-That’s where 95% of performance tuning comes from.
+## Important Notes
+
+- Suggestions are starting ranges, not guaranteed stable values.
+- Validate with proper stress tests before daily use.
+- Results vary with thermals, scheduler decisions, and active workload.
+
+## Limitations
+
+- Requires Linux `cpufreq` exposure at `/sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq`.
+- Core grouping assumes SMT pairs (`0/1`, `2/3`, ...). This may be inaccurate on some systems (for example hybrid or nonstandard topology).
+- Single run snapshots can be noisy; run multiple times for better confidence.
