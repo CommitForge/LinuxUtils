@@ -34,14 +34,16 @@ The script prints:
 - Detected CPU model string
 - Detected AMD tuning profile when platform is AMD
 
-## AMD Profile Mapping (Includes Newer Than Ryzen 5000)
+## AMD Profile Mapping (Ryzen 5000 Included, Plus Newer)
 
-If AMD is detected, the script maps model name to a profile:
+If AMD is detected, the script maps model families (Ryzen / Threadripper / EPYC) to tuning profiles:
 
-- `Ryzen 5000`
-- `Ryzen 7000/8000`
-- `Ryzen 9000+`
+- `5000/6000 class profile`
+- `7000/8000 class profile`
+- `9000+ class profile`
 - `AMD fallback` (when model does not match known Ryzen/Threadripper patterns)
+
+The output now also includes `Profile source` to show how mapping was chosen (for example detected series number).
 
 For each core rank bucket, the script prints:
 
@@ -65,14 +67,18 @@ For each core rank bucket, the script prints:
 - Number of samples per thread
 
 3. `CORE ANALYSIS`
-- Groups logical threads into core pairs (`0/1`, `2/3`, ...)
+- Groups threads using CPU topology (`physical_package_id` + `core_id`) when available
+- Falls back to pair grouping only if topology data is unavailable
 - Uses highest observed frequency per core
 - Prints best-to-worst ranking
 - Adds `GAP_TO_BEST(MHz)` column
+- Adds a `TOPOLOGY` column (for example `P0C3`)
 
 4. `AMD Curve/Boost Suggestions` (AMD only)
 - Includes newer-than-Ryzen-5000 profiles
+- Keeps Ryzen 5000-class tuning fully supported
 - Adds `FREQ_INC(+MHz)` column in output
+- Includes `TOPOLOGY` column for easier BIOS matching
 
 5. `INTEL GUIDANCE` or `GENERIC GUIDANCE` (non-AMD)
 - Suggests safe next steps based on available data
@@ -82,6 +88,7 @@ For each core rank bucket, the script prints:
 - Suggestions are heuristic starting points, not guaranteed stable values.
 - Always validate with stress tests and monitor temperatures/errors.
 - Results vary with thermals, firmware/BIOS behavior, scheduler decisions, and workload.
+- Requires Linux `cpufreq` exposure via `/sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq`.
 
 ## Disclaimer
 

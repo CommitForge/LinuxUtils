@@ -36,36 +36,46 @@ fi
 
 AMD_PROFILE="N/A"
 AMD_PROFILE_LABEL="N/A"
+AMD_PROFILE_SOURCE="N/A"
+
+set_amd_profile_by_generation() {
+    local generation="$1"
+    local family_label="$2"
+
+    if (( generation >= 9 )); then
+        AMD_PROFILE="RYZEN_9000_PLUS"
+        AMD_PROFILE_LABEL="$family_label 9000+ class profile"
+    elif (( generation >= 7 )); then
+        AMD_PROFILE="RYZEN_7000_8000"
+        AMD_PROFILE_LABEL="$family_label 7000/8000 class profile"
+    elif (( generation >= 5 )); then
+        AMD_PROFILE="RYZEN_5000_6000"
+        AMD_PROFILE_LABEL="$family_label 5000/6000 class profile"
+    else
+        AMD_PROFILE="AMD_FALLBACK"
+        AMD_PROFILE_LABEL="$family_label older/other fallback profile"
+    fi
+}
 
 if [[ "$PLATFORM" == "AMD" ]]; then
     AMD_PROFILE="AMD_FALLBACK"
     AMD_PROFILE_LABEL="AMD generic fallback profile"
+    AMD_PROFILE_SOURCE="Generic AMD fallback"
 
-    if [[ "$MODEL_NAME" =~ [Rr]yzen[[:space:]]+[3579][[:space:]]+([0-9]{4,5}) ]]; then
-        series="${BASH_REMATCH[1]}"
+    series=$(echo "$MODEL_NAME" | grep -Eo '[0-9]{4,5}' | head -n1 || true)
+
+    if [[ "$MODEL_NAME" =~ [Rr]yzen && -n "$series" ]]; then
         generation="${series:0:1}"
-
-        if (( generation >= 9 )); then
-            AMD_PROFILE="RYZEN_9000_PLUS"
-            AMD_PROFILE_LABEL="Ryzen 9000+"
-        elif (( generation >= 7 )); then
-            AMD_PROFILE="RYZEN_7000_8000"
-            AMD_PROFILE_LABEL="Ryzen 7000/8000"
-        elif (( generation == 5 )); then
-            AMD_PROFILE="RYZEN_5000"
-            AMD_PROFILE_LABEL="Ryzen 5000"
-        else
-            AMD_PROFILE="AMD_FALLBACK"
-            AMD_PROFILE_LABEL="AMD older/other Ryzen fallback profile"
-        fi
-    elif [[ "$MODEL_NAME" =~ [Tt]hreadripper[[:space:]]+([0-9]{4,5}) ]]; then
-        series="${BASH_REMATCH[1]}"
+        set_amd_profile_by_generation "$generation" "Ryzen"
+        AMD_PROFILE_SOURCE="Detected Ryzen series $series"
+    elif [[ "$MODEL_NAME" =~ [Tt]hreadripper && -n "$series" ]]; then
         generation="${series:0:1}"
-
-        if (( generation >= 7 )); then
-            AMD_PROFILE="RYZEN_7000_8000"
-            AMD_PROFILE_LABEL="Threadripper 7000+ (mapped profile)"
-        fi
+        set_amd_profile_by_generation "$generation" "Threadripper"
+        AMD_PROFILE_SOURCE="Detected Threadripper series $series"
+    elif [[ "$MODEL_NAME" =~ [Ee][Pp][Yy][Cc] && -n "$series" ]]; then
+        generation="${series:0:1}"
+        set_amd_profile_by_generation "$generation" "EPYC"
+        AMD_PROFILE_SOURCE="Detected EPYC series $series"
     fi
 fi
 
@@ -73,6 +83,7 @@ echo "Detected platform: $PLATFORM"
 echo "Detected CPU model: ${MODEL_NAME:-unknown}"
 if [[ "$PLATFORM" == "AMD" ]]; then
     echo "Detected AMD tuning profile: $AMD_PROFILE_LABEL"
+    echo "Profile source: $AMD_PROFILE_SOURCE"
 elif [[ "$PLATFORM" == "INTEL" ]]; then
     echo "Intel detected: data is valid for ranking cores; AMD-specific tuning hints are skipped."
 else
@@ -87,11 +98,23 @@ declare -a max_freq
 declare -a sum_freq
 declare -a samples
 
+cpufreq_paths_found=0
 for ((i=0; i<THREADS; i++)); do
     max_freq[$i]=0
     sum_freq[$i]=0
     samples[$i]=0
+
+    if [ -f "/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq" ]; then
+        cpufreq_paths_found=$((cpufreq_paths_found + 1))
+    fi
 done
+
+if (( cpufreq_paths_found == 0 )); then
+    echo "Error: no readable cpufreq scaling files were found for any CPU thread."
+    echo "Suggestion: ensure CPU frequency scaling is exposed at /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq."
+    echo "Suggestion: if unavailable on this platform, use a vendor-specific telemetry tool and interpret ranking manually."
+    exit 1
+fi
 
 END_TIME=$(($(date +%s) + DURATION))
 
@@ -130,39 +153,78 @@ done
 echo ""
 echo "=== CORE ANALYSIS ==="
 
-# Assumes thread siblings are adjacent pairs: 0/1, 2/3, ...
-CORES=$(( (THREADS + 1) / 2 ))
+declare -A core_index_by_key=()
+declare -a core_key_by_index=()
+declare -a core_label_by_index=()
+declare -a core_threads=()
+declare -a core_max=()
 
-declare -a core_max
+for ((i=0; i<THREADS; i++)); do
+    pkg_path="/sys/devices/system/cpu/cpu$i/topology/physical_package_id"
+    core_path="/sys/devices/system/cpu/cpu$i/topology/core_id"
+
+    if [ -r "$pkg_path" ] && [ -r "$core_path" ]; then
+        package_id=$(<"$pkg_path")
+        core_id=$(<"$core_path")
+    else
+        package_id=""
+        core_id=""
+    fi
+
+    if [[ "$package_id" =~ ^[0-9]+$ && "$core_id" =~ ^[0-9]+$ ]]; then
+        key="pkg${package_id}:core${core_id}"
+        label="P${package_id}C${core_id}"
+    else
+        pair_id=$((i / 2))
+        key="pair${pair_id}"
+        label="PAIR${pair_id}"
+    fi
+
+    if [[ -n "${core_index_by_key[$key]+x}" ]]; then
+        index=${core_index_by_key[$key]}
+    else
+        index=${#core_key_by_index[@]}
+        core_index_by_key[$key]=$index
+        core_key_by_index[$index]="$key"
+        core_label_by_index[$index]="$label"
+        core_threads[$index]=""
+        core_max[$index]=0
+    fi
+
+    if [[ -n "${core_threads[$index]}" ]]; then
+        core_threads[$index]+=" $i"
+    else
+        core_threads[$index]="$i"
+    fi
+done
+
+CORES=${#core_key_by_index[@]}
 
 for ((c=0; c<CORES; c++)); do
-    t1=$((c * 2))
-    t2=$((c * 2 + 1))
-
-    core_max[$c]=${max_freq[$t1]:-0}
-    if (( t2 < THREADS )) && (( max_freq[$t2] > core_max[$c] )); then
-        core_max[$c]=${max_freq[$t2]}
-    fi
+    core_max[$c]=0
+    for t in ${core_threads[$c]}; do
+        (( max_freq[$t] > core_max[$c] )) && core_max[$c]=${max_freq[$t]}
+    done
 done
 
 mapfile -t ranked < <(
     for ((c=0; c<CORES; c++)); do
-        echo "$c ${core_max[$c]}"
-    done | sort -k2 -nr
+        printf "%d %s %s %d\n" "$c" "${core_label_by_index[$c]}" "${core_key_by_index[$c]}" "${core_max[$c]}"
+    done | sort -k4 -nr
 )
 
 if (( ${#ranked[@]} == 0 )); then
     echo "No core data captured."
 else
-    read -r _ best_khz <<< "${ranked[0]}"
+    read -r _ _ _ best_khz <<< "${ranked[0]}"
 
-    printf "%-6s %-6s %-12s %-18s\n" "RANK" "CORE" "MAX(kHz)" "GAP_TO_BEST(MHz)"
-    echo "-------------------------------------------------------------"
+    printf "%-6s %-6s %-10s %-12s %-18s\n" "RANK" "CORE" "TOPOLOGY" "MAX(kHz)" "GAP_TO_BEST(MHz)"
+    echo "-----------------------------------------------------------------------"
 
     for i in "${!ranked[@]}"; do
-        read -r core max_khz <<< "${ranked[$i]}"
+        read -r core core_label _ max_khz <<< "${ranked[$i]}"
         gap_mhz=$(( (best_khz - max_khz) / 1000 ))
-        printf "%-6d %-6d %-12d %-18d\n" "$((i + 1))" "$core" "$max_khz" "$gap_mhz"
+        printf "%-6d %-6d %-10s %-12d %-18d\n" "$((i + 1))" "$core" "$core_label" "$max_khz" "$gap_mhz"
     done
 fi
 
@@ -177,7 +239,7 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
     declare -a freq_inc
 
     for i in "${!ranked[@]}"; do
-        read -r core _ <<< "${ranked[$i]}"
+        read -r core _ _ _ <<< "${ranked[$i]}"
 
         case "$AMD_PROFILE" in
             RYZEN_9000_PLUS)
@@ -204,7 +266,7 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
                     freq_inc[$core]="+200"
                 fi
                 ;;
-            RYZEN_5000)
+            RYZEN_5000_6000)
                 if (( i < 2 )); then
                     curve[$core]="-5 to -10"
                     freq_inc[$core]="+50"
@@ -231,12 +293,12 @@ if [[ "$PLATFORM" == "AMD" && ${#ranked[@]} -gt 0 ]]; then
         esac
     done
 
-    printf "%-6s %-6s %-12s %-14s %-14s\n" "RANK" "CORE" "MAX(kHz)" "CURVE" "FREQ_INC(+MHz)"
-    echo "------------------------------------------------------------------"
+    printf "%-6s %-6s %-10s %-12s %-14s %-14s\n" "RANK" "CORE" "TOPOLOGY" "MAX(kHz)" "CURVE" "FREQ_INC(+MHz)"
+    echo "----------------------------------------------------------------------------"
 
     for i in "${!ranked[@]}"; do
-        read -r core max_khz <<< "${ranked[$i]}"
-        printf "%-6d %-6d %-12d %-14s %-14s\n" "$((i + 1))" "$core" "$max_khz" "${curve[$core]}" "${freq_inc[$core]}"
+        read -r core core_label _ max_khz <<< "${ranked[$i]}"
+        printf "%-6d %-6d %-10s %-12d %-14s %-14s\n" "$((i + 1))" "$core" "$core_label" "$max_khz" "${curve[$core]}" "${freq_inc[$core]}"
     done
 elif [[ "$PLATFORM" == "INTEL" ]]; then
     echo ""
