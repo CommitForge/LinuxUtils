@@ -435,25 +435,33 @@ else
 
     peak_core=$sustained_core
     peak_max=-1
+    avg_core=$sustained_core
+    best_avg=-1
     for row in "${ranked[@]}"; do
-        read -r core _ _ _ _ _ _ max_khz _ _ <<< "$row"
+        read -r core _ _ _ _ _ avg_khz max_khz _ _ <<< "$row"
+        if (( avg_khz > best_avg )); then
+            best_avg=$avg_khz
+            avg_core=$core
+        fi
         if (( max_khz > peak_max )); then
             peak_max=$max_khz
             peak_core=$core
         fi
     done
 
-    printf "%-6s %-6s %-10s %-12s %-10s %-10s %-10s %-12s %-16s %-14s %-5s %-8s\n" \
-        "RANK" "CORE" "TOPOLOGY" "SCORE(kHz)" "P95" "P99" "AVG" "MAX_REF(kHz)" "GAP_TO_BEST(MHz)" "SPIKE_GAP(MHz)" "REL" "REP_THR"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
+    printf "%-6s %-6s %-10s %-12s %-10s %-10s %-12s %-12s %-14s %-14s %-14s %-14s %-5s %-8s\n" \
+        "RANK" "CORE" "TOPOLOGY" "SCORE(kHz)" "P95" "P99" "AVG_REF(kHz)" "MAX_REF(kHz)" "GAP_SCORE(MHz)" "GAP_AVG(MHz)" "GAP_MAX(MHz)" "SPIKE_GAP(MHz)" "REL" "REP_THR"
+    echo "------------------------------------------------------------------------------------------------------------------------------------------------"
 
     for i in "${!ranked[@]}"; do
         read -r core core_label _ score p95 p99 avg max_khz spike_khz rep_thread <<< "${ranked[$i]}"
-        gap_mhz=$(( (best_score - score) / 1000 ))
+        gap_score_mhz=$(( (best_score - score) / 1000 ))
+        gap_avg_mhz=$(( (best_avg - avg) / 1000 ))
+        gap_max_mhz=$(( (peak_max - max_khz) / 1000 ))
         spike_mhz=$(( spike_khz / 1000 ))
         reliability=$(classify_reliability "$spike_khz")
-        printf "%-6d %-6d %-10s %-12d %-10d %-10d %-10d %-12d %-16d %-14d %-5s %-8d\n" \
-            "$((i + 1))" "$core" "$core_label" "$score" "$p95" "$p99" "$avg" "$max_khz" "$gap_mhz" "$spike_mhz" "$reliability" "$rep_thread"
+        printf "%-6d %-6d %-10s %-12d %-10d %-10d %-12d %-12d %-14d %-14d %-14d %-14d %-5s %-8d\n" \
+            "$((i + 1))" "$core" "$core_label" "$score" "$p95" "$p99" "$avg" "$max_khz" "$gap_score_mhz" "$gap_avg_mhz" "$gap_max_mhz" "$spike_mhz" "$reliability" "$rep_thread"
     done
 
     echo ""
@@ -462,6 +470,9 @@ else
     else
         echo "Peak-only winner differs (CORE $peak_core has highest raw MAX, CORE $sustained_core has highest sustained SCORE)."
         echo "Using sustained SCORE avoids one-sample spikes deciding the ranking."
+    fi
+    if (( sustained_core != avg_core )); then
+        echo "Highest average core differs from sustained-score winner (CORE $avg_core has highest AVG_REF)."
     fi
 fi
 

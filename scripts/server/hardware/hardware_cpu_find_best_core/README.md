@@ -86,7 +86,8 @@ It also prints a dedicated global fallback block:
 - Chooses a representative thread per core by `P95`/`P99`/`AVG`
 - Ranks cores by sustained score:
   - `SCORE = 50% * P95 + 30% * P99 + 20% * AVG`
-- Prints both sustained ranking and `MAX_REF` for comparison
+- Prints both `AVG_REF` and `MAX_REF` side by side for comparison
+- Adds separate gaps in MHz for score, average, and max (`GAP_SCORE`, `GAP_AVG`, `GAP_MAX`)
 - Explicitly warns when peak-only winner differs from sustained winner
 
 5. `AMD TUNING SUGGESTIONS` (AMD only)
